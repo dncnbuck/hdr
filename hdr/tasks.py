@@ -15,6 +15,7 @@ def read_images(input_dir, import_formats=None):
     ext = os.path.splitext(f)[1]
     if ext.lower() not in import_formats:
         continue
+    logger.info(f)
     im = cv2.imread(os.path.join(input_dir,f))
     images.append(im)
   return images
@@ -36,7 +37,7 @@ def align_images(images):
 
 def get_image_exposures(images):
   # Should read images and get metadata and extract image exposure times
-  return np.array([ 1/30.0, 0.25, 2.5, 15.0 ], dtype=np.float32)
+  return np.array([ 1/30.0, 2.5, 15.0, 0.25, ], dtype=np.float32)
 
 
 def get_camera_reponse_function(images, times):
