@@ -24,6 +24,7 @@ setup(
     install_requires=[
         'numpy',
         'opencv-python',
+        'Pillow'
     ],
     extras_require={},
     entry_points={

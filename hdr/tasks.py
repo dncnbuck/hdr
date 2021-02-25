@@ -1,13 +1,16 @@
 import cv2
 import numpy as np
+from PIL import Image
+from PIL.ExifTags import TAGS
 import os
 import logging
+
 
 logger = logging.getLogger(__name__)
 
 
-def read_images(input_dir, import_formats=None):
-  images = []
+def get_images_in_dir(input_dir, import_formats=None):
+  image_files = []
   import_formats = ['.jpg']
 
   logger.info("Reading Images in {} of type {}".format(input_dir, import_formats))
@@ -15,8 +18,13 @@ def read_images(input_dir, import_formats=None):
     ext = os.path.splitext(f)[1]
     if ext.lower() not in import_formats:
         continue
-    logger.info(f)
-    im = cv2.imread(os.path.join(input_dir,f))
+    image_files.append(os.path.join(input_dir, f))
+  return image_files
+
+def read_images(image_files):
+  images = []
+  for f in image_files:
+    im = cv2.imread(f)
     images.append(im)
   return images
 
@@ -35,9 +43,23 @@ def align_images(images):
   alignMTB.process(images, images)
 
 
-def get_image_exposures(images):
+def get_image_exposures(image_files):
+  exposure_times = []
+  for f in image_files:
+    im_pil = Image.open(f)
+    exifdata = im_pil.getexif()
+    exif_data = {}
+    # iterating over all EXIF data fields
+    for tag_id in exifdata:
+      # get the tag name, instead of human unreadable tag id
+      tag = TAGS.get(tag_id, tag_id)
+      data = exifdata.get(tag_id)
+      exif_data[tag] = data
+    
+    exposure_times.append(exif_data['ExposureTime'])
+    
   # Should read images and get metadata and extract image exposure times
-  return np.array([ 1/30.0, 2.5, 15.0, 0.25, ], dtype=np.float32)
+  return np.array(exposure_times, dtype=np.float32)
 
 
 def get_camera_reponse_function(images, times):
@@ -58,10 +80,12 @@ def merge_image_to_hdr(images, times, responseDebevec):
 
 def hdr(input_dir, import_formats, output_dir):
 
+  # Find Image Files
+  image_files = get_images_in_dir(input_dir, import_formats)
   # Load images
-  images = read_images(input_dir, import_formats)
+  images = read_images(image_files)
   # Read Exposure times
-  times = get_image_exposures(images)
+  times = get_image_exposures(image_files)
   # Align input images
   align_images(images)
   # Obtain Camera Response Function (CRF)
