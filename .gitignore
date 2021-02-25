@@ -1,0 +1,6 @@
+.DS_Store
+Makefile
+build/
+data/*
+hdr.egg-info/
+*pycache*
