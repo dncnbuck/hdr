@@ -31,7 +31,7 @@ def read_images(image_files):
 
 def save_image(file_path, image):
   if not os.path.exists(os.path.dirname(file_path)):
-    os.mkdir(os.path.dirname(file_path))
+    os.makedirs(os.path.dirname(file_path))
   cv2.imwrite(file_path, image)
   logger.info("saved {}".format(file_path))
 
@@ -93,12 +93,12 @@ def hdr(input_dir, import_formats, output_dir):
   # Merge images into an HDR linear image
   hdrDebevec = merge_image_to_hdr(images, times, responseDebevec)
   # Save HDR image.
-  save_image(file_path=os.path.join(output_dir,"hdrDebevec.hdr"), image=hdrDebevec)
+  save_image(file_path=os.path.join(output_dir, input_dir, "hdrDebevec.hdr"), image=hdrDebevec)
   # Save tonemapped images
   methods = ['drago', 'reinhard', 'mantiuk']
   for method in methods:
     image = generate_tonemap(hdrDebevec, method)
-    save_image(file_path=os.path.join(output_dir, "ldr-{}.jpg".format(method)), image=image * 255)
+    save_image(file_path=os.path.join(output_dir, input_dir, "ldr-{}.jpg".format(method)), image=image * 255)
 
 
 def generate_tonemap(hdr_image, method):
